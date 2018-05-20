@@ -5,21 +5,23 @@
 #' multiple hits are found, return the one with the highest priority, that is
 #' coming earlier in the search path, with the local directory having the
 #' lowest priority. If no path is found, return \code{NA}.
+#'
+#' @importFrom tools file_path_sans_ext
+#'
 find_module = function (module) {
     parts = unlist(strsplit(module, '/'))
 
     # Use all-but-last parts to construct module source path, last part to
     # determine name of source file.
-    prefix = if (length(parts) == 1) '' else parts[-length(parts)]
-    suffix = parts[length(parts)]
-    module_path = merge_path(prefix)
+    suffix = basename(file_path_sans_ext(module))
+    module_path = dirname(module)
     file_pattern = sprintf('^%s\\.[rR]$', suffix)
 
     search_path = if (parts[1] %in% c('.', '..'))
         calling_module_path()
     else
         import_search_path()
-    candidate_paths = file.path(search_path, module_path)
+    candidate_paths = c(file.path(search_path, module_path), module_path)
 
     # For each candidate, try finding a module file. A module file is either
     # `{suffix}.r` or `{suffix}/__init__.r`, preceded by the path prefix.

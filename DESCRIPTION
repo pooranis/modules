@@ -1,8 +1,8 @@
-Package: modules
+Package: rmodules
 Title: Modules for R
 Version: 0.9.9
 Author: Konrad Rudolph <konrad.rudolph@gmail.com>
-Maintainer: Konrad Rudolph <konrad.rudolph@gmail.com>
+Maintainer: Poorani <pooranis@users.noreply.github.com>
 Description: Create reusable code modules in R. An alternative package
     management system for R, similar to module systems in Python, Ruby or
     JavaScript.
@@ -24,3 +24,4 @@ Remotes:
     hadley/testthat,
     klutometis/roxygen
 VignetteBuilder: knitr
+RoxygenNote: 6.0.1

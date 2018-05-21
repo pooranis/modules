@@ -7,9 +7,9 @@
 \alias{import_package}
 \title{Import a module into the current scope}
 \usage{
-import_(module, attach, attach_operators = TRUE, doc)
+import_(module, attach, attach_operators = TRUE, doc, module_name = NULL)
 
-import(module, attach, attach_operators = TRUE, doc)
+import(module, attach, attach_operators = TRUE, doc, module_name = NULL)
 
 import_package_(package, attach, attach_operators = TRUE)
 

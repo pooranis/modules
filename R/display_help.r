@@ -15,7 +15,8 @@ compile_help.text_help_format = function (x, rd) {
 }
 
 compile_help.html_help_format = function (x, rd) {
-    tools::Rd2HTML(rd, out = tempfile('Rtxt'), package = mock_package_name)
+    tfile <- tempfile('Rtxt')
+    suppressWarnings(tools::Rd2HTML(rd, out = tfile, package = mock_package_name, Links=tools::findHTMLlinks()))
 }
 
 patch_topic_name.text_help_format = function (x, file, topic) {
@@ -42,10 +43,15 @@ display_help_file.text_help_format = function (x, file, topic) {
               delete.file = TRUE)
 }
 
+
 display_help_file.html_help_format = function (x, file, topic) {
+
     port = tools::startDynamicHelp(NA)
     html_path = file.path(tempdir(), sprintf('.R/doc/html/%s.html', topic))
     dir.create(dirname(html_path), recursive = TRUE, showWarnings = FALSE)
+    alt <- readLines(file)
+    alt <- sapply(alt, function(x) gsub("\\.\\.\\/\\.\\.", "\\.\\.\\/\\.\\./\\.\\.\\/help/library" , x))
+    writeLines(alt, file)
     on.exit(unlink(file))
     file.copy(file, html_path, overwrite = TRUE)
     utils::browseURL(sprintf('http://127.0.0.1:%s/doc/html/%s.html', port, topic))

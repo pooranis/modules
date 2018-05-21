@@ -71,7 +71,7 @@
 #' @seealso \code{\link{module_help}}
 #' @export
 #' @rdname import
-import_ = function (module, attach, attach_operators = TRUE, doc) {
+import_ = function (module, attach, attach_operators = TRUE, doc, module_name=NULL) {
     stopifnot(inherits(module, 'character'))
 
     if (missing(attach)) {
@@ -103,6 +103,7 @@ import_ = function (module, attach, attach_operators = TRUE, doc) {
     mapply(do_import, names(containing_modules), containing_modules,
            rep(doc, length(containing_modules)))
 
+    if(!is.null(module_name)) module =  module_name
     mod_ns = do_import(module, module_path, doc)
     module_parent = parent.frame()
     mod_env = exhibit_module_namespace(mod_ns, module, module_parent,
@@ -117,7 +118,7 @@ import_ = function (module, attach, attach_operators = TRUE, doc) {
 
 #' @export
 #' @rdname import
-import = function (module, attach, attach_operators = TRUE, doc) {
+import = function (module, attach, attach_operators = TRUE, doc, module_name=NULL) {
     # Substitute exactly `import` with `import_` in call. This ensures that the
     # call works regardless of whether it was bare or qualified
     # (`modules::import`).

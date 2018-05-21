@@ -67,7 +67,7 @@ seq$print.seq
     ##     Map(print_single, lines, names)
     ##     invisible(seq)
     ## }
-    ## <environment: 0x7fa7df3678f8>
+    ## <environment: 0x7fb00962fce8>
 
 Attaching modules
 -----------------

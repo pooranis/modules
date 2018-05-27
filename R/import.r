@@ -72,69 +72,80 @@
 #' @export
 #' @rdname import
 import_ = function (module, attach, attach_operators = TRUE, doc, module_name=NULL) {
-    stopifnot(inherits(module, 'character'))
+  stopifnot(inherits(module, 'character'))
 
-    if (missing(attach)) {
-        attach = if (interactive() && is.null(module_name()))
-            getOption('import.attach', FALSE)
-        else
-            FALSE
+  if (file.exists(module) && is.null(module_name)) {
+    module_name <-  basename(file_path_sans_ext(module))
+    msg <- paste0("If you do not specify module_name, links in help will not work.  Using module name '",
+                 module_name, "'.")
+    if (!missing(attach) && attach) {
+      msg <- paste0(msg, "\nDetach module in search path using detach('module:", module_name,"')")
     }
+    warning(msg)
+  }
 
-    stopifnot(class(attach) == 'logical' && length(attach) == 1 ||
+
+  if (missing(attach)) {
+    attach = if (interactive() && is.null(module_name()))
+      getOption('import.attach', FALSE)
+    else
+      FALSE
+  }
+
+  stopifnot(class(attach) == 'logical' && length(attach) == 1 ||
               class(attach) == 'character')
 
-    if (is.character(attach)) {
-        export_list = attach
-        attach = TRUE
-    }
-    else
-        export_list = NULL
+  if (is.character(attach)) {
+    export_list = attach
+    attach = TRUE
+  }
+  else
+    export_list = NULL
 
-    if (missing(doc))
-        doc = interactive()
+  if (missing(doc))
+    doc = interactive()
 
-    module_path = try(find_module(module), silent = TRUE)
+  module_path = try(find_module(module), silent = TRUE)
 
-    if (inherits(module_path, 'try-error'))
-        stop(attr(module_path, 'condition')$message)
+  if (inherits(module_path, 'try-error'))
+    stop(attr(module_path, 'condition')$message)
 
-    containing_modules = module_init_files(module, module_path)
-    mapply(do_import, names(containing_modules), containing_modules,
-           rep(doc, length(containing_modules)))
+  containing_modules = module_init_files(module, module_path)
+  mapply(do_import, names(containing_modules), containing_modules,
+         rep(doc, length(containing_modules)))
 
-    if(!is.null(module_name)) module =  module_name
-    mod_ns = do_import(module, module_path, doc)
-    module_parent = parent.frame()
-    mod_env = exhibit_module_namespace(mod_ns, module, module_parent,
-                                       export_list)
+  if(!is.null(module_name)) module =  module_name
+  mod_ns = do_import(module, module_path, doc)
+  module_parent = parent.frame()
+  mod_env = exhibit_module_namespace(mod_ns, module, module_parent,
+                                     export_list)
 
-    attach_module(attach, attach_operators, module, mod_env, module_parent)
+  attach_module(attach, attach_operators, module, mod_env, module_parent)
 
-    attr(mod_env, 'call') = match.call()
-    lockEnvironment(mod_env, bindings = TRUE)
-    invisible(mod_env)
+  attr(mod_env, 'call') = match.call()
+  lockEnvironment(mod_env, bindings = TRUE)
+  invisible(mod_env)
 }
 
 #' @export
 #' @rdname import
 import = function (module, attach, attach_operators = TRUE, doc, module_name=NULL) {
-    # Substitute exactly `import` with `import_` in call. This ensures that the
-    # call works regardless of whether it was bare or qualified
+  # Substitute exactly `import` with `import_` in call. This ensures that the
+  # call works regardless of whether it was bare or qualified
     # (`modules::import`).
-    call = sys.call()
-    call[[1]] = do.call(substitute,
-                        list(call[[1]], list(import = quote(import_))))
-    if (! inherits(substitute(module), 'character')) {
-        msg = sprintf(paste('Calling %s with a variable will change its',
-                            'semantics in version 1.0 of %s. Use %s instead.',
-                            'See %s for more information.'),
+  call = sys.call()
+  call[[1]] = do.call(substitute,
+                      list(call[[1]], list(import = quote(import_))))
+  if (! inherits(substitute(module), 'character')) {
+    msg = sprintf(paste('Calling %s with a variable will change its',
+                        'semantics in version 1.0 of %s. Use %s instead.',
+                        'See %s for more information.'),
                       sQuote('import'), sQuote('modules'),
-                      sQuote(deparse(call)),
-                      sQuote('https://github.com/klmr/modules/issues/68'))
-        .Deprecated(msg = msg)
-    }
-    eval.parent(call)
+                  sQuote(deparse(call)),
+                  sQuote('https://github.com/klmr/modules/issues/68'))
+    .Deprecated(msg = msg)
+  }
+  eval.parent(call)
 }
 
 #' Attach a module environment locally or globally
@@ -150,32 +161,32 @@ import = function (module, attach, attach_operators = TRUE, doc, module_name=NUL
 #' or the operators it exports. Attaching is done by inserting the module at the
 #' first position into the parent environment chain.
 attach_module = function (all, operators, name, mod_env, parent) {
-    attached_module = if (all)
-        mod_env
-    else if (operators)
-        export_operators(mod_env, parent, name)
-    else
-        NULL
+  attached_module = if (all)
+    mod_env
+  else if (operators)
+    export_operators(mod_env, parent, name)
+  else
+    NULL
 
-    if (is.null(attached_module))
-        return()
+  if (is.null(attached_module))
+    return()
 
-    fix_module_attributes(parent)
+  fix_module_attributes(parent)
 
-    # The following distinction is necessary because R segfaults if we try
-    # to change `parent.env(.GlobalEnv)`. More info:
-    # http://stackoverflow.com/q/22790484/1968
-    if (identical(parent, .GlobalEnv)) {
-        warn = interactive() && getOption('import.warn_conflicts', TRUE)
-        # To avoid spurious `R CMD CHECK` warning. Modules only uses `attach`
-        # when explicitly prompted by the user, so the use should be acceptable.
-        get('attach', .BaseNamespaceEnv, mode = 'function'
-            )(attached_module, name = environmentName(attached_module),
-            warn.conflicts = warn)
-        attr(mod_env, 'attached') = environmentName(attached_module)
-    }
-    else
-        parent.env(parent) = attached_module
+  # The following distinction is necessary because R segfaults if we try
+  # to change `parent.env(.GlobalEnv)`. More info:
+  # http://stackoverflow.com/q/22790484/1968
+  if (identical(parent, .GlobalEnv)) {
+    warn = interactive() && getOption('import.warn_conflicts', TRUE)
+    # To avoid spurious `R CMD CHECK` warning. Modules only uses `attach`
+    # when explicitly prompted by the user, so the use should be acceptable.
+    get('attach', .BaseNamespaceEnv, mode = 'function'
+    )(attached_module, name = environmentName(attached_module),
+      warn.conflicts = warn)
+    attr(mod_env, 'attached') = environmentName(attached_module)
+  }
+  else
+    parent.env(parent) = attached_module
 }
 
 #' Save a module’s inherited attributes into a local environment
@@ -188,11 +199,11 @@ attach_module = function (all, operators, name, mod_env, parent) {
 #' current local scope. To fix this, \code{fix_module_attributes} copies the
 #' enclosing module’s attributes into the local environment.
 fix_module_attributes = function (envir) {
-    old_attributes = try(module_attributes(envir), silent = TRUE)
-    if (! inherits(old_attributes, 'try-error'))
-        module_attributes(envir) = old_attributes
-    else
-        module_attributes(envir) = new.env(parent = emptyenv())
+  old_attributes = try(module_attributes(envir), silent = TRUE)
+  if (! inherits(old_attributes, 'try-error'))
+    module_attributes(envir) = old_attributes
+  else
+    module_attributes(envir) = new.env(parent = emptyenv())
 }
 
 #' Perform the actual import operation on an individual module
@@ -201,52 +212,52 @@ fix_module_attributes = function (envir) {
 #' @param module_path the fully resolved path to the module file
 #' @param doc logical, whether the module documentation should be parsed
 do_import = function (module_name, module_path, doc) {
-    if (is_module_loaded(module_path))
-        return(get_loaded_module(module_path))
+  if (is_module_loaded(module_path))
+    return(get_loaded_module(module_path))
 
-    # Environment with helper functions which are only available when loading a
-    # module via `import`, and are not otherwise exported by the package.
+  # Environment with helper functions which are only available when loading a
+  # module via `import`, and are not otherwise exported by the package.
 
     modules_exports = sapply(getNamespaceExports(getNamespace('modules')),
-                             getExportedValue,
+                           getExportedValue,
                              ns = getNamespace('modules'),
-                             simplify = FALSE)
-    helper_env = list2env(c(modules_exports,
-                            list(export_submodule = export_submodule,
-                                 export_submodule_ = export_submodule_)),
-                          parent = .BaseNamespaceEnv)
+                           simplify = FALSE)
+  helper_env = list2env(c(modules_exports,
+                          list(export_submodule = export_submodule,
+                               export_submodule_ = export_submodule_)),
+                        parent = .BaseNamespaceEnv)
 
-    # The namespace contains a module’s content. This schema is very much like
-    # R package organisation.
-    # A good resource for this is:
-    # <http://obeautifulcode.com/R/How-R-Searches-And-Finds-Stuff/>
-    namespace = structure(new.env(parent = helper_env),
-                          name = paste('namespace', module_name, sep = ':'),
-                          class = c('namespace', 'environment'))
+  # The namespace contains a module’s content. This schema is very much like
+  # R package organisation.
+  # A good resource for this is:
+  # <http://obeautifulcode.com/R/How-R-Searches-And-Finds-Stuff/>
+  namespace = structure(new.env(parent = helper_env),
+                        name = paste('namespace', module_name, sep = ':'),
+                        class = c('namespace', 'environment'))
 
-    module_attr(namespace, 'name') = environmentName(namespace)
-    module_attr(namespace, 'path') = module_path
+  module_attr(namespace, 'name') = environmentName(namespace)
+  module_attr(namespace, 'path') = module_path
 
-    # First cache the (still empty) namespace, then source code into it. This is
-    # necessary to allow circular imports.
-    cache_module(namespace)
-    # If loading fails due to an error inside the module (i.e. `parse` or `eval`
-    # will fail), we unload the module again.
-    on.exit(uncache_module(namespace))
+  # First cache the (still empty) namespace, then source code into it. This is
+  # necessary to allow circular imports.
+  cache_module(namespace)
+  # If loading fails due to an error inside the module (i.e. `parse` or `eval`
+  # will fail), we unload the module again.
+  on.exit(uncache_module(namespace))
 
-    # R, Windows and Unicode don’t play together. `source` does not work here.
-    # See http://developer.r-project.org/Encodings_and_R.html and
-    # http://stackoverflow.com/q/5031630/1968 for a discussion of this.
-    eval(parse(module_path, encoding = 'UTF-8'), envir = namespace)
+  # R, Windows and Unicode don’t play together. `source` does not work here.
+  # See http://developer.r-project.org/Encodings_and_R.html and
+  # http://stackoverflow.com/q/5031630/1968 for a discussion of this.
+  eval(parse(module_path, encoding = 'UTF-8'), envir = namespace)
 
-    make_S3_methods_known(namespace)
+  make_S3_methods_known(namespace)
 
-    if (doc)
-        attr(namespace, 'doc') = parse_documentation(namespace)
+  if (doc)
+    attr(namespace, 'doc') = parse_documentation(namespace)
 
-    # No error occured — prevent unloading.
-    on.exit()
-    namespace
+  # No error occured — prevent unloading.
+  on.exit()
+  namespace
 }
 
 #' Copy a module’s operators into a separate environment
@@ -264,32 +275,32 @@ do_import = function (module_name, module_path, doc) {
 #' inside the namespace (see, for example, \code{\link[dplyr]{\%>\%}}, which is
 #' imported from the package “magrittr”).
 export_operators = function (environment, parent, module_name) {
-    ops = c('+', '-', '*', '/', '^', '**', '&', '|', ':', '::', ':::', '$',
-            '$<-', '=', '<-', '<<-', '==', '<', '<=', '>', '>=', '!=', '~',
-            '&&', '||', '!', '?', '@', '@<-', ':=', '(', '{', '[', '[[', '(<-',
-            '{<-', '[<-')
+  ops = c('+', '-', '*', '/', '^', '**', '&', '|', ':', '::', ':::', '$',
+          '$<-', '=', '<-', '<<-', '==', '<', '<=', '>', '>=', '!=', '~',
+          '&&', '||', '!', '?', '@', '@<-', ':=', '(', '{', '[', '[[', '(<-',
+          '{<-', '[<-')
 
-    is_predefined = function (f) f %in% ops
+  is_predefined = function (f) f %in% ops
 
-    is_op = function (f) {
-        # `.` delimits an S3 method name, but only when not inside `%…%`.
-        prefix = regmatches(f, regexpr('^[^.]+|(%[^%]*%)', f))
-        is_predefined(prefix) || grepl('^%.*%$', prefix)
-    }
+  is_op = function (f) {
+    # `.` delimits an S3 method name, but only when not inside `%…%`.
+    prefix = regmatches(f, regexpr('^[^.]+|(%[^%]*%)', f))
+    is_predefined(prefix) || grepl('^%.*%$', prefix)
+  }
 
-    operators = Filter(is_op, lsf.str(environment))
+  operators = Filter(is_op, lsf.str(environment))
 
-    if (length(operators) == 0)
-        return()
+  if (length(operators) == 0)
+    return()
 
-    # Skip one parent environment because this module is hooked into the chain
-    # between the calling environment and its ancestor, thus sitting in its
-    # local object search path.
-    exhibit_namespace(mget(operators, envir = environment),
-                      paste('operators', module_name, sep = ':'),
-                      module_path(environment),
-                      NULL,
-                      parent)
+  # Skip one parent environment because this module is hooked into the chain
+  # between the calling environment and its ancestor, thus sitting in its
+  # local object search path.
+  exhibit_namespace(mget(operators, envir = environment),
+                    paste('operators', module_name, sep = ':'),
+                    module_path(environment),
+                    NULL,
+                    parent)
 }
 
 #' Unload a given module
@@ -310,15 +321,15 @@ export_operators = function (environment, parent, module_name) {
 #' @seealso \code{\link{reload}}
 #' @export
 unload = function (module) {
-    stopifnot(inherits(module, 'module'))
-    module_ref = as.character(substitute(module))
-    uncache_module(module)
-    attached = attr(module, 'attached')
-    if (! is.null(attached) && ! is.na(match(attached, search())))
-        detach(attached, character.only = TRUE)
-    # Unset the module reference in its scope, i.e. the caller’s environment or
-    # some parent thereof.
-    rm(list = module_ref, envir = parent.frame(), inherits = TRUE)
+  stopifnot(inherits(module, 'module'))
+  module_ref = as.character(substitute(module))
+  uncache_module(module)
+  attached = attr(module, 'attached')
+  if (! is.null(attached) && ! is.na(match(attached, search())))
+    detach(attached, character.only = TRUE)
+  # Unset the module reference in its scope, i.e. the caller’s environment or
+  # some parent thereof.
+  rm(list = module_ref, envir = parent.frame(), inherits = TRUE)
 }
 
 #' Reload a given module
@@ -337,39 +348,39 @@ unload = function (module) {
 #' @seealso \code{\link{unload}}
 #' @export
 reload = function (module) {
-    stopifnot(inherits(module, 'module'))
-    module_ref = as.character(substitute(module))
+  stopifnot(inherits(module, 'module'))
+  module_ref = as.character(substitute(module))
 
-    module_ns = get_loaded_module(module_path(module))
-    uncache_module(module)
-    # If loading fails, restore old module.
-    on.exit(cache_module(module_ns))
+  module_ns = get_loaded_module(module_path(module))
+  uncache_module(module)
+  # If loading fails, restore old module.
+  on.exit(cache_module(module_ns))
 
-    attached = attr(module, 'attached')
-    if (! is.null(attached)) {
-        attached_pos = match(attached, search())
-        if (! is.na(attached_pos)) {
-            attached_env = as.environment(attached)
-            detach(attached, character.only = TRUE)
-            # To avoid spurious `R CMD CHECK` warning. Modules only uses
-            # `attach` when explicitly prompted by the user, so the use should
-            # be acceptable.
-            on.exit(get('attach', .BaseNamespaceEnv, mode = 'function')
-                    (attached_env, pos = attached_pos, name = attached),
-                    add = TRUE)
-        }
+  attached = attr(module, 'attached')
+  if (! is.null(attached)) {
+    attached_pos = match(attached, search())
+    if (! is.na(attached_pos)) {
+      attached_env = as.environment(attached)
+      detach(attached, character.only = TRUE)
+      # To avoid spurious `R CMD CHECK` warning. Modules only uses
+      # `attach` when explicitly prompted by the user, so the use should
+      # be acceptable.
+      on.exit(get('attach', .BaseNamespaceEnv, mode = 'function')
+              (attached_env, pos = attached_pos, name = attached),
+              add = TRUE)
     }
+  }
 
-    # Use `eval` to replicate the exact call being made to `import`.
-    mod_env = eval.parent(attr(module, 'call'))
-    # Importing worked, so cancel restoring the old module.
-    on.exit()
+  # Use `eval` to replicate the exact call being made to `import`.
+  mod_env = eval.parent(attr(module, 'call'))
+  # Importing worked, so cancel restoring the old module.
+  on.exit()
 
-    assign(module_ref, mod_env, envir = parent.frame(), inherits = TRUE)
+  assign(module_ref, mod_env, envir = parent.frame(), inherits = TRUE)
 }
 
 #' @export
 print.module = function (x, ...) {
-    cat(sprintf('<%s>\n', module_attr(x, 'name')))
-    invisible(x)
+  cat(sprintf('<%s>\n', module_attr(x, 'name')))
+  invisible(x)
 }

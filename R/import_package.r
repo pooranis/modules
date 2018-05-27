@@ -50,7 +50,7 @@ import_package_ = function (package, attach, attach_operators = TRUE) {
 import_package = function (package, attach, attach_operators = TRUE) {
     # Substitute exactly `import_package` with `import_package_` in call. This
     # ensures that the call works regardless of whether it was bare or
-    # qualified (`modules::import_package`).
+    # qualified (`rmodules::import_package`).
     call = sys.call()
     call[[1]] = do.call(substitute,
                         list(call[[1]],
@@ -59,7 +59,7 @@ import_package = function (package, attach, attach_operators = TRUE) {
         msg = sprintf(paste('Calling %s with a variable will change its',
                             'semantics in version 1.0 of %s. Use %s instead.',
                             'See %s for more information.'),
-                      sQuote('import_package'), sQuote('modules'),
+                      sQuote('import_package'), sQuote('rmodules'),
                       sQuote(deparse(call)),
                       sQuote('https://github.com/klmr/modules/issues/68'))
         .Deprecated(msg = msg)

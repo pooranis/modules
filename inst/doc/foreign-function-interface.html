@@ -11,7 +11,7 @@
 
 <meta name="author" content="Konrad Rudolph" />
 
-<meta name="date" content="2018-05-20" />
+<meta name="date" content="2018-05-27" />
 
 <title>Foreign function interface</title>
 
@@ -251,7 +251,7 @@ div.tocify {
 
 <h1 class="title toc-ignore">Foreign function interface</h1>
 <h4 class="author"><em>Konrad Rudolph</em></h4>
-<h4 class="date"><em>2018-05-20</em></h4>
+<h4 class="date"><em>2018-05-27</em></h4>
 
 </div>
 
@@ -279,8 +279,10 @@ NumericVector convolve(NumericVector a, NumericVector b) {
     <span class="cf">return</span> xab;
 }</code></pre></div>
 <p>This module can be used like any normal module:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rcpp =<span class="st"> </span><span class="kw">import</span>(<span class="st">'rcpp'</span>)
-<span class="kw">ls</span>(rcpp)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rcpp =<span class="st"> </span><span class="kw">import</span>(<span class="st">'rcpp'</span>)</code></pre></div>
+<pre><code>## Warning in import_(&quot;rcpp&quot;): If you do not specify module_name, links in
+## help will not work. Using module name 'rcpp'.</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ls</span>(rcpp)</code></pre></div>
 <pre><code>## [1] &quot;convolve&quot;</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rcpp<span class="op">$</span><span class="kw">convolve</span>(<span class="dv">1</span> <span class="op">:</span><span class="st"> </span><span class="dv">3</span>, <span class="dv">1</span> <span class="op">:</span><span class="st"> </span><span class="dv">5</span>)</code></pre></div>
 <pre><code>## [1]  1  4 10 16 22 22 15</code></pre>

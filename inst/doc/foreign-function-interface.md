@@ -35,6 +35,12 @@ This module can be used like any normal module:
 
 ``` r
 rcpp = import('rcpp')
+```
+
+    ## Warning in import_("rcpp"): If you do not specify module_name, links in
+    ## help will not work. Using module name 'rcpp'.
+
+``` r
 ls(rcpp)
 ```
 

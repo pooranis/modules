@@ -7,3 +7,5 @@
 ^printenv\.r$
 ^\.travis\.yml$
 CONTRIBUTING.md
+^.*\.Rproj$
+^\.Rproj\.user$

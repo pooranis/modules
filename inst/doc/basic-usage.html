@@ -11,7 +11,7 @@
 
 <meta name="author" content="Konrad Rudolph" />
 
-<meta name="date" content="2018-05-20" />
+<meta name="date" content="2018-05-27" />
 
 <title>Basic Usage</title>
 
@@ -251,7 +251,7 @@ div.tocify {
 
 <h1 class="title toc-ignore">Basic Usage</h1>
 <h4 class="author"><em>Konrad Rudolph</em></h4>
-<h4 class="date"><em>2018-05-20</em></h4>
+<h4 class="date"><em>2018-05-27</em></h4>
 
 </div>
 
@@ -298,7 +298,7 @@ s</code></pre></div>
 ##     Map(print_single, lines, names)
 ##     invisible(seq)
 ## }
-## &lt;environment: 0x7ffcc3251440&gt;</code></pre>
+## &lt;environment: 0x7f9e8edd22a8&gt;</code></pre>
 </div>
 <div id="attaching-modules" class="section level2">
 <h2><span class="header-section-number">1.2</span> Attaching modules</h2>
@@ -346,8 +346,10 @@ s</code></pre></div>
 <p>The submodule is specified as <code>'./seq'</code> rather than <code>'seq'</code>: the explicitly provided relative path prevents lookup in the import search path (that we set via <code>options(import.path=…)</code> earlier); instead, only the current directory is considered.</p>
 <p>We can now use the <code>utils</code> module:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">options</span>(<span class="dt">import.path =</span> <span class="ot">NULL</span>) <span class="co"># Reset search path</span>
-utils =<span class="st"> </span><span class="kw">import</span>(<span class="st">'utils'</span>)
-<span class="kw">ls</span>(utils)</code></pre></div>
+utils =<span class="st"> </span><span class="kw">import</span>(<span class="st">'utils'</span>)</code></pre></div>
+<pre><code>## Warning in import_(&quot;utils&quot;): If you do not specify module_name, links in
+## help will not work. Using module name 'utils'.</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ls</span>(utils)</code></pre></div>
 <pre><code>## [1] &quot;seq&quot;</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ls</span>(utils<span class="op">$</span>seq)</code></pre></div>
 <pre><code>## [1] &quot;print.seq&quot;         &quot;revcomp&quot;           &quot;seq&quot;              

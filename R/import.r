@@ -132,7 +132,7 @@ import_ = function (module, attach, attach_operators = TRUE, doc, module_name=NU
 import = function (module, attach, attach_operators = TRUE, doc, module_name=NULL) {
   # Substitute exactly `import` with `import_` in call. This ensures that the
   # call works regardless of whether it was bare or qualified
-    # (`modules::import`).
+  # (`rmodules::import`).
   call = sys.call()
   call[[1]] = do.call(substitute,
                       list(call[[1]], list(import = quote(import_))))
@@ -140,7 +140,7 @@ import = function (module, attach, attach_operators = TRUE, doc, module_name=NUL
     msg = sprintf(paste('Calling %s with a variable will change its',
                         'semantics in version 1.0 of %s. Use %s instead.',
                         'See %s for more information.'),
-                      sQuote('import'), sQuote('modules'),
+                  sQuote('import'), sQuote('rmodules'),
                   sQuote(deparse(call)),
                   sQuote('https://github.com/klmr/modules/issues/68'))
     .Deprecated(msg = msg)
@@ -218,9 +218,9 @@ do_import = function (module_name, module_path, doc) {
   # Environment with helper functions which are only available when loading a
   # module via `import`, and are not otherwise exported by the package.
 
-    modules_exports = sapply(getNamespaceExports(getNamespace('modules')),
+  modules_exports = sapply(getNamespaceExports(getNamespace('rmodules')),
                            getExportedValue,
-                             ns = getNamespace('modules'),
+                           ns = getNamespace('rmodules'),
                            simplify = FALSE)
   helper_env = list2env(c(modules_exports,
                           list(export_submodule = export_submodule,

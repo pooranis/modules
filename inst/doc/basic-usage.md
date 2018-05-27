@@ -67,7 +67,7 @@ seq$print.seq
     ##     Map(print_single, lines, names)
     ##     invisible(seq)
     ## }
-    ## <environment: 0x7fb00962fce8>
+    ## <environment: 0x7fe537f971f8>
 
 Attaching modules
 -----------------
@@ -151,6 +151,12 @@ We can now use the `utils` module:
 ``` r
 options(import.path = NULL) # Reset search path
 utils = import('utils')
+```
+
+    ## Warning in import_("utils"): If you do not specify module_name, links in
+    ## help will not work. Using module name 'utils'.
+
+``` r
 ls(utils)
 ```
 

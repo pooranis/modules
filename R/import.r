@@ -75,15 +75,19 @@ import_ = function (module, attach, attach_operators = TRUE, doc, module_name=NU
   stopifnot(inherits(module, 'character'))
 
   if (file.exists(module) && is.null(module_name)) {
-    module_name <-  basename(file_path_sans_ext(module))
-    msg <- paste0("If you do not specify module_name, links in help will not work.  Using module name '",
-                 module_name, "'.")
-    if (!missing(attach) && attach) {
-      msg <- paste0(msg, "\nDetach module in search path using detach('module:", module_name,"')")
-    }
+    msg <- paste0("If you do not specify module_name, links in help will not work.")
     warning(msg)
   }
 
+  if (!missing(attach) && attach) {
+    print(search())
+    if (!is.null(module_name)) {
+      mlpath <- paste0("module:", module_name)
+      if (length(ml <- grep(mlpath, search(), value=T)) > 0) {
+        sapply(ml, detach, character.only=T)
+      }
+    }
+  }
 
   if (missing(attach)) {
     attach = if (interactive() && is.null(module_name()))

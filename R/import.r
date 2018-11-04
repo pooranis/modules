@@ -79,7 +79,14 @@ import_ = function (module, attach, attach_operators = TRUE, doc, module_name=NU
     warning(msg)
   }
 
-  if (!missing(attach) && attach) {
+  if (missing(attach)) {
+    attach = if (interactive() && is.null(module_name()))
+      getOption('import.attach', FALSE)
+    else
+      FALSE
+  }
+
+  if (attach) {
     if (!is.null(module_name)) {
       mlpath <- paste0("module:", module_name)
     } else {
@@ -88,13 +95,6 @@ import_ = function (module, attach, attach_operators = TRUE, doc, module_name=NU
     if (length(ml <- grep(mlpath, search(), value=T)) > 0) {
       sapply(ml, detach, character.only=T)
     }
-  }
-
-  if (missing(attach)) {
-    attach = if (interactive() && is.null(module_name()))
-      getOption('import.attach', FALSE)
-    else
-      FALSE
   }
 
   stopifnot(class(attach) == 'logical' && length(attach) == 1 ||

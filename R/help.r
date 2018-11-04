@@ -43,7 +43,11 @@ module_help = function (topic, help_type = getOption('help_type', 'text')) {
         stop(sQuote(deparse(topic)), ' is not a valid module help topic',
              call. = FALSE)
 
-    module = get(as.character(topic[[2]]), parent.frame())
+    if (exists(as.character(topic[[2]]), parent.frame())) {
+      module = get(as.character(topic[[2]]), parent.frame())
+    } else {
+      module = get_loaded_module(module_path(paste0('module:', topic[[2]])))
+    }
     module_name = module_name(module)
     object = as.character(topic[[3]])
 
@@ -58,7 +62,6 @@ module_help = function (topic, help_type = getOption('help_type', 'text')) {
 is_module_help_topic = function (topic, parent) {
     # For nested modules, `topic` looks like this: `a$b$c…`. We need to retrieve
     # the first part of this (`a`) and check whether it’s a module.
-
     leftmost_name = function (expr) {
         if (is.name(expr))
             expr
@@ -70,9 +73,17 @@ is_module_help_topic = function (topic, parent) {
 
     top_module = leftmost_name(topic)
 
-    ! is.null(top_module) &&
-        exists(as.character(top_module), parent) &&
-        ! is.null(module_name(get(as.character(top_module), parent)))
+    if (is.null(top_module)) return(FALSE)
+
+    if (exists(as.character(top_module), parent)  &&
+        ! is.null(module_name(get(as.character(top_module), parent)))) {
+      return(TRUE)
+    }
+
+    top_module = paste0('module:', top_module)
+    module_path <- try(module_path(top_module))
+    if (inherits(module_path, "try-error")) return(FALSE)
+    return(TRUE)
 }
 
 #' @usage

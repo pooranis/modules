@@ -82,9 +82,11 @@ import_ = function (module, attach, attach_operators = TRUE, doc, module_name=NU
   if (!missing(attach) && attach) {
     if (!is.null(module_name)) {
       mlpath <- paste0("module:", module_name)
-      if (length(ml <- grep(mlpath, search(), value=T)) > 0) {
-        sapply(ml, detach, character.only=T)
-      }
+    } else {
+      mlpath <- paste0("module:", module)
+    }
+    if (length(ml <- grep(mlpath, search(), value=T)) > 0) {
+      sapply(ml, detach, character.only=T)
     }
   }
 

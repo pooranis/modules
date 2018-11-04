@@ -79,9 +79,8 @@ is_module_help_topic = function (topic, parent) {
         ! is.null(module_name(get(as.character(top_module), parent)))) {
       return(TRUE)
     }
-
     top_module = paste0('module:', top_module)
-    module_path <- try(module_path(top_module))
+    module_path <- try(module_path(top_module), silent = T)
     if (inherits(module_path, "try-error")) return(FALSE)
     return(TRUE)
 }
